@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment variables — never commit secrets
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+dist-ssr/
+build/
+
+# Prisma generated
+task-manager-backend/src/generated/
+
+# Database files
+*.sqlite3
+*.db
+
+# Coverage & test artifacts
+.coverage
+htmlcov/
+coverage/
+*.lcov
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Editor & OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.sw?
+
+# Lock files (keep package-lock.json, ignore yarn/pnpm)
+yarn.lock
+pnpm-lock.yaml

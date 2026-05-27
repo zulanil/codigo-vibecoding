@@ -1,0 +1,9 @@
+[run]
+source = config
+
+[report]
+omit =
+    config/asgi.py
+    config/wsgi.py
+    config/settings/production.py
+    config/settings.py
