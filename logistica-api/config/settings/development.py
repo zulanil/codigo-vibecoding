@@ -10,5 +10,5 @@ DATABASES = {
 }
 
 CORS_ALLOWED_ORIGINS = config(
-    'CORS_ALLOWED_ORIGINS', default='http://localhost:5173,http://localhost:3000'
+    'CORS_ALLOWED_ORIGINS', default='http://localhost:5173,http://localhost:3000,http://localhost:3001'
 ).split(',')
