@@ -50,6 +50,10 @@ export default function DashboardCharts() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const allDates = (shipments ?? []).map((s) => s.created_at.substring(0, 10)).sort();
+  const dataMinDate = allDates[0] ?? "";
+  const dataMaxDate = allDates[allDates.length - 1] ?? "";
+
   const filteredShipments: Shipment[] = (shipments ?? []).filter((shipment) => {
     const date = shipment.created_at.substring(0, 10);
     if (dateFrom !== "" && date < dateFrom) return false;
@@ -84,7 +88,7 @@ export default function DashboardCharts() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-end gap-4">
         <div className="flex items-center gap-2">
           <label htmlFor="date-from" className="text-sm text-muted-foreground">
             Desde
@@ -93,6 +97,8 @@ export default function DashboardCharts() {
             id="date-from"
             type="date"
             value={dateFrom}
+            min={dataMinDate}
+            max={dateTo || dataMaxDate}
             onChange={(e) => setDateFrom(e.target.value)}
             className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
           />
@@ -105,6 +111,8 @@ export default function DashboardCharts() {
             id="date-to"
             type="date"
             value={dateTo}
+            min={dateFrom || dataMinDate}
+            max={dataMaxDate}
             onChange={(e) => setDateTo(e.target.value)}
             className="rounded-md border border-input bg-background px-3 py-1.5 text-sm"
           />
@@ -118,6 +126,11 @@ export default function DashboardCharts() {
         >
           Limpiar
         </button>
+        {dataMinDate && (
+          <span className="text-xs text-muted-foreground">
+            Datos: {dataMinDate} — {dataMaxDate}
+          </span>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
