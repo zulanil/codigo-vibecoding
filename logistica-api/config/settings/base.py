@@ -101,3 +101,7 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'API REST para gestión de envíos de productos tecnológicos',
     'VERSION': '1.0.0',
 }
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]

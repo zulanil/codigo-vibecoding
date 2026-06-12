@@ -9,7 +9,7 @@ if RAILWAY_DOMAIN:
     ALLOWED_HOSTS.append(RAILWAY_DOMAIN)
     CSRF_TRUSTED_ORIGINS = [f'https://{RAILWAY_DOMAIN}']
     
-MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+
 
 DATABASES = {
     'default': dj_database_url.config(
