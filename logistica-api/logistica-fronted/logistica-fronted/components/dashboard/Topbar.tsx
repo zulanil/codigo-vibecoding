@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, User, LogOut, LayoutDashboard, Building2, Warehouse, Users, Package, UserCheck, Truck, Route, ShoppingBag } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Menu, User, LogOut, LayoutDashboard, Building2, Warehouse, Users, Package, UserCheck, Truck, Route, ShoppingBag, UserCog } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -23,15 +25,16 @@ import { useAuthStore } from "@/lib/stores/auth";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/suppliers", label: "Proveedores", icon: Building2 },
-  { href: "/warehouses", label: "Almacenes", icon: Warehouse },
-  { href: "/customers", label: "Clientes", icon: Users },
-  { href: "/products", label: "Productos", icon: Package },
-  { href: "/drivers", label: "Conductores", icon: UserCheck },
-  { href: "/transports", label: "Transportes", icon: Truck },
-  { href: "/routes", label: "Rutas", icon: Route },
-  { href: "/shipments", label: "Envíos", icon: ShoppingBag },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permission: "__any__" },
+  { href: "/suppliers", label: "Proveedores", icon: Building2, permission: "suppliers.view_supplier" },
+  { href: "/warehouses", label: "Almacenes", icon: Warehouse, permission: "warehouses.view_warehouse" },
+  { href: "/customers", label: "Clientes", icon: Users, permission: "customers.view_customer" },
+  { href: "/products", label: "Productos", icon: Package, permission: "products.view_product" },
+  { href: "/drivers", label: "Conductores", icon: UserCheck, permission: "drivers.view_driver" },
+  { href: "/transports", label: "Transportes", icon: Truck, permission: "transport.view_transport" },
+  { href: "/routes", label: "Rutas", icon: Route, permission: "routes.view_route" },
+  { href: "/shipments", label: "Envíos", icon: ShoppingBag, permission: "shipments.view_shipment" },
+  { href: "/users", label: "Usuarios", icon: UserCog, permission: "__superuser__" },
 ];
 
 function UserAvatar({ username }: { username: string | null }) {
@@ -48,7 +51,21 @@ function UserAvatar({ username }: { username: string | null }) {
 export function Topbar() {
   const pathname = usePathname();
   const username = useAuthStore((s) => s.username);
+  const isSuperuser = useAuthStore((s) => s.isSuperuser);
+  const permissions = useAuthStore((s) => s.permissions);
   const logout = useAuthStore((s) => s.logout);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  const navItems = mounted
+    ? NAV_ITEMS.filter(({ permission }) => {
+        if (!permission) return true;
+        if (permission === "__superuser__") return isSuperuser;
+        if (permission === "__any__") return isSuperuser || permissions.length > 0;
+        if (isSuperuser || permissions.includes("*")) return true;
+        return permissions.includes(permission);
+      })
+    : NAV_ITEMS.filter(({ permission }) => permission !== "__superuser__");
 
   return (
     <header className="flex h-14 items-center justify-between border-b bg-card px-4 shrink-0">
@@ -66,7 +83,7 @@ export function Topbar() {
               </SheetTitle>
             </SheetHeader>
             <nav className="flex-1 overflow-y-auto p-2 space-y-1">
-              {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+              {navItems.map(({ href, label, icon: Icon }) => {
                 const isActive =
                   href === "/dashboard"
                     ? pathname === "/dashboard"
@@ -101,9 +118,11 @@ export function Topbar() {
           <UserAvatar username={username} />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuLabel className="font-normal">
-            <p className="text-sm font-medium">{username ?? "Usuario"}</p>
-          </DropdownMenuLabel>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel className="font-normal">
+              <p className="text-sm font-medium">{username ?? "Usuario"}</p>
+            </DropdownMenuLabel>
+          </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => {}} className="cursor-pointer p-0">
             <Link href="/profile" className="flex w-full items-center gap-2 px-1.5 py-1">

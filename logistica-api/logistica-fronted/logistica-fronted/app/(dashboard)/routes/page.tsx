@@ -1,8 +1,6 @@
 import { Suspense } from "react";
-import Link from "next/link";
-import { Plus } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
 import { RouteTable } from "@/components/routes/RouteTable";
+import { CreateButton } from "@/components/ui/create-button";
 
 export default async function RoutesPage({
   searchParams,
@@ -14,9 +12,7 @@ export default async function RoutesPage({
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Rutas</h1>
-        <Link href="/routes/new" className={buttonVariants()}>
-          <Plus className="h-4 w-4" />Nueva Ruta
-        </Link>
+        <CreateButton permission="routes.add_route" href="/routes/new" label="Nueva Ruta" />
       </div>
       <Suspense
         fallback={

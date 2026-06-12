@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { Supplier } from "@/lib/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useModulePermissions } from "@/lib/hooks/usePermission";
 
 export function SupplierTable() {
   const searchParams = useSearchParams();
@@ -69,7 +70,8 @@ export function SupplierTable() {
     ? [{ id: ordering.replace("-", ""), desc: ordering.startsWith("-") }]
     : [];
 
-  const columns = getSupplierColumns(setSupplierToDelete);
+  const { canEdit, canDelete } = useModulePermissions("suppliers");
+  const columns = getSupplierColumns(setSupplierToDelete, canEdit, canDelete);
 
   const table = useReactTable({
     data: data?.results ?? [],

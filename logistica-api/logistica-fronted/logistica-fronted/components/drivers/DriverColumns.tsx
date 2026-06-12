@@ -9,7 +9,9 @@ import { cn } from "@/lib/utils";
 import type { Driver } from "@/lib/types";
 
 export function getDriverColumns(
-  onDelete: (driver: Driver) => void
+  onDelete: (driver: Driver) => void,
+  canEdit = true,
+  canDelete = true
 ): ColumnDef<Driver>[] {
   return [
     {
@@ -47,21 +49,25 @@ export function getDriverColumns(
       header: "Acciones",
       cell: ({ row }) => (
         <div className="flex gap-1">
-          <Link
-            href={`/drivers/${row.original.id}`}
-            aria-label={`Editar conductor ${row.original.license_number}`}
-            className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-          >
-            <Pencil className="h-4 w-4" />
-          </Link>
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label={`Eliminar conductor ${row.original.license_number}`}
-            onClick={() => onDelete(row.original)}
-          >
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
+          {canEdit && (
+            <Link
+              href={`/drivers/${row.original.id}`}
+              aria-label={`Editar conductor ${row.original.license_number}`}
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+            >
+              <Pencil className="h-4 w-4" />
+            </Link>
+          )}
+          {canDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label={`Eliminar conductor ${row.original.license_number}`}
+              onClick={() => onDelete(row.original)}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          )}
         </div>
       ),
     },

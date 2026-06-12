@@ -58,6 +58,9 @@ apiClient.interceptors.response.use(
     try {
       await fetch("/api/auth/refresh", { method: "POST" });
       const newToken = getAccessToken();
+      // Re-decode JWT so isSuperuser/groups stay in sync after refresh
+      const { useAuthStore } = await import("@/lib/stores/auth");
+      useAuthStore.getState().refreshUserFromCookie();
       processQueue(null, newToken);
       if (newToken) original.headers.Authorization = `Bearer ${newToken}`;
       return apiClient(original);

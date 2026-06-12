@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getShipments } from "@/lib/api/shipments";
 import { getCustomers } from "@/lib/api/customers";
 import { getShipmentColumns } from "./ShipmentColumns";
+import { useModulePermissions } from "@/lib/hooks/usePermission";
 import {
   Table,
   TableBody,
@@ -86,7 +87,8 @@ export function ShipmentTable() {
     ? [{ id: ordering.replace(/^-/, ""), desc: ordering.startsWith("-") }]
     : [];
 
-  const columns = getShipmentColumns(customersMap);
+  const { canEdit, canDelete } = useModulePermissions("shipments");
+  const columns = getShipmentColumns(customersMap, canEdit, canDelete);
 
   const table = useReactTable({
     data: data?.results ?? [],

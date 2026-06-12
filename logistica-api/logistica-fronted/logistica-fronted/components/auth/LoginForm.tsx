@@ -30,20 +30,17 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
   const router = useRouter();
-  const setAuthenticated = useAuthStore((s) => s.setAuthenticated);
+  const refreshUserFromCookie = useAuthStore((s) => s.refreshUserFromCookie);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: { username: "", password: "" },
   });
 
-  const setUsername = useAuthStore((s) => s.setUsername);
-
   const mutation = useMutation({
     mutationFn: loginRequest,
-    onSuccess: (_data, variables) => {
-      setAuthenticated(true);
-      setUsername(variables.username);
+    onSuccess: () => {
+      refreshUserFromCookie();
       router.push("/dashboard");
     },
     onError: (error: unknown) => {

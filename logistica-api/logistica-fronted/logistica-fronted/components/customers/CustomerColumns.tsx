@@ -9,7 +9,9 @@ import { cn } from "@/lib/utils";
 import type { Customer } from "@/lib/types";
 
 export function getCustomerColumns(
-  onDelete: (customer: Customer) => void
+  onDelete: (customer: Customer) => void,
+  canEdit = true,
+  canDelete = true,
 ): ColumnDef<Customer>[] {
   return [
     {
@@ -55,21 +57,25 @@ export function getCustomerColumns(
       header: "Acciones",
       cell: ({ row }) => (
         <div className="flex gap-1">
-          <Link
-            href={`/customers/${row.original.id}`}
-            aria-label={`Editar ${row.original.name}`}
-            className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-          >
-            <Pencil className="h-4 w-4" />
-          </Link>
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label={`Eliminar ${row.original.name}`}
-            onClick={() => onDelete(row.original)}
-          >
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
+          {canEdit && (
+            <Link
+              href={`/customers/${row.original.id}`}
+              aria-label={`Editar ${row.original.name}`}
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+            >
+              <Pencil className="h-4 w-4" />
+            </Link>
+          )}
+          {canDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label={`Eliminar ${row.original.name}`}
+              onClick={() => onDelete(row.original)}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          )}
         </div>
       ),
     },

@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getTransports } from "@/lib/api/transports";
 import { getDrivers } from "@/lib/api/drivers";
 import { getTransportColumns } from "./TransportColumns";
+import { useModulePermissions } from "@/lib/hooks/usePermission";
 import {
   Table,
   TableBody,
@@ -92,7 +93,8 @@ export function TransportTable() {
     ? [{ id: ordering.replace("-", ""), desc: ordering.startsWith("-") }]
     : [];
 
-  const columns = getTransportColumns(driversMap);
+  const { canEdit, canDelete } = useModulePermissions("transport");
+  const columns = getTransportColumns(driversMap, canEdit, canDelete);
 
   const table = useReactTable({
     data: data?.results ?? [],

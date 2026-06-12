@@ -70,7 +70,7 @@ export default function TransportFleetChart({ data }: TransportFleetChartProps) 
           contentStyle={TOOLTIP_STYLE}
           labelStyle={{ color: "var(--foreground)", fontWeight: 600 }}
           itemStyle={{ color: "var(--muted-foreground)" }}
-          formatter={(value: number, name: string) => [value, name]}
+          formatter={(value, name) => [Number(value ?? 0), String(name ?? '')]}
         />
         <Legend
           formatter={(value) => (

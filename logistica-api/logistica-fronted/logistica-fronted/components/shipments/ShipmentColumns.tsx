@@ -22,7 +22,9 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export function getShipmentColumns(
-  customersMap: Map<number, string>
+  customersMap: Map<number, string>,
+  canEdit = true,
+  canDelete = true
 ): ColumnDef<Shipment>[] {
   return [
     {
@@ -121,13 +123,15 @@ export function getShipmentColumns(
       header: "Acciones",
       cell: ({ row }) => (
         <div className="flex gap-1">
-          <Link
-            href={`/shipments/${row.original.id}`}
-            className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-          >
-            Editar
-          </Link>
-          <DeleteShipmentDialog id={row.original.id} />
+          {canEdit && (
+            <Link
+              href={`/shipments/${row.original.id}`}
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+            >
+              Editar
+            </Link>
+          )}
+          {canDelete && <DeleteShipmentDialog id={row.original.id} />}
         </div>
       ),
     },

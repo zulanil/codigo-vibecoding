@@ -17,7 +17,9 @@ const VEHICLE_LABELS: Record<string, string> = {
 };
 
 export function getTransportColumns(
-  driversMap: Map<number, string>
+  driversMap: Map<number, string>,
+  canEdit = true,
+  canDelete = true
 ): ColumnDef<Transport>[] {
   return [
     {
@@ -99,17 +101,21 @@ export function getTransportColumns(
       header: "Acciones",
       cell: ({ row }) => (
         <div className="flex gap-1">
-          <Link
-            href={`/transports/${row.original.id}`}
-            aria-label={`Editar ${row.original.plate_number}`}
-            className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-          >
-            <Pencil className="h-4 w-4" />
-          </Link>
-          <DeleteTransportDialog
-            id={row.original.id}
-            plate_number={row.original.plate_number}
-          />
+          {canEdit && (
+            <Link
+              href={`/transports/${row.original.id}`}
+              aria-label={`Editar ${row.original.plate_number}`}
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+            >
+              <Pencil className="h-4 w-4" />
+            </Link>
+          )}
+          {canDelete && (
+            <DeleteTransportDialog
+              id={row.original.id}
+              plate_number={row.original.plate_number}
+            />
+          )}
         </div>
       ),
     },

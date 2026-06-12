@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'django_filters',
     'drf_spectacular',
     # Apps
+    'apps.authentication',
     'apps.customers',
     'apps.suppliers',
     'apps.warehouses',

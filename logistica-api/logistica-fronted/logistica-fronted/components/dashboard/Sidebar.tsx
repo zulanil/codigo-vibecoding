@@ -2,33 +2,43 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
-  Building2,
-  Package,
-  Users,
-  Truck,
-  UserCheck,
-  Route,
-  Warehouse,
-  ShoppingBag,
-  LayoutDashboard,
+  Building2, Package, Users, Truck, UserCheck,
+  Route, Warehouse, ShoppingBag, LayoutDashboard, UserCog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/lib/stores/auth";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/suppliers", label: "Proveedores", icon: Building2 },
-  { href: "/warehouses", label: "Almacenes", icon: Warehouse },
-  { href: "/customers", label: "Clientes", icon: Users },
-  { href: "/products", label: "Productos", icon: Package },
-  { href: "/drivers", label: "Conductores", icon: UserCheck },
-  { href: "/transports", label: "Transportes", icon: Truck },
-  { href: "/routes", label: "Rutas", icon: Route },
-  { href: "/shipments", label: "Envíos", icon: ShoppingBag },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permission: "__any__" },
+  { href: "/suppliers", label: "Proveedores", icon: Building2, permission: "suppliers.view_supplier" },
+  { href: "/warehouses", label: "Almacenes", icon: Warehouse, permission: "warehouses.view_warehouse" },
+  { href: "/customers", label: "Clientes", icon: Users, permission: "customers.view_customer" },
+  { href: "/products", label: "Productos", icon: Package, permission: "products.view_product" },
+  { href: "/drivers", label: "Conductores", icon: UserCheck, permission: "drivers.view_driver" },
+  { href: "/transports", label: "Transportes", icon: Truck, permission: "transport.view_transport" },
+  { href: "/routes", label: "Rutas", icon: Route, permission: "routes.view_route" },
+  { href: "/shipments", label: "Envíos", icon: ShoppingBag, permission: "shipments.view_shipment" },
+  { href: "/users", label: "Usuarios", icon: UserCog, permission: "__superuser__" },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const isSuperuser = useAuthStore((s) => s.isSuperuser);
+  const permissions = useAuthStore((s) => s.permissions);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  const visibleItems = mounted
+    ? NAV_ITEMS.filter(({ permission }) => {
+        if (!permission) return true;
+        if (permission === "__superuser__") return isSuperuser;
+        if (permission === "__any__") return isSuperuser || permissions.length > 0;
+        if (isSuperuser || permissions.includes("*")) return true;
+        return permissions.includes(permission);
+      })
+    : NAV_ITEMS.filter(({ permission }) => permission !== "__superuser__");
 
   return (
     <aside className="hidden md:flex h-screen w-60 flex-col border-r bg-sidebar shrink-0">
@@ -37,7 +47,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto p-2 space-y-1">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {visibleItems.map(({ href, label, icon: Icon }) => {
           const isActive =
             href === "/dashboard"
               ? pathname === "/dashboard"

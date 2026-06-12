@@ -60,7 +60,7 @@ export default function RevenueOverTimeChart({ data }: RevenueOverTimeChartProps
           contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--card-foreground)' }}
           labelStyle={{ color: 'var(--foreground)', fontWeight: 600 }}
           itemStyle={{ color: 'var(--muted-foreground)' }}
-          formatter={(value: number) => [formatCurrency(value), 'Ingresos']}
+          formatter={(value) => [formatCurrency(Number(value ?? 0)), 'Ingresos']}
           labelFormatter={(label) => `Mes: ${label}`}
         />
         <Area

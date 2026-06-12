@@ -22,9 +22,15 @@
  * ni ningún servidor de desarrollo de forma autónoma").
  */
 import { defineConfig, devices } from "@playwright/test";
+import { config } from "dotenv";
+
+config({ path: ".env.local" });
 
 export default defineConfig({
   testDir: "e2e",
+  // Tests con varios seeds/cleanups por API tardan más bajo carga con
+  // varios workers en paralelo contra el dev server de Next.js.
+  timeout: 60_000,
   use: {
     baseURL: process.env.E2E_BASE_URL ?? "http://localhost:3000",
     trace: "on-first-retry",

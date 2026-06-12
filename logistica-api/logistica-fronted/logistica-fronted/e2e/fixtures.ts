@@ -19,6 +19,7 @@ type Fixtures = {
     seed: (endpoint: string, payload: Record<string, unknown>) => Promise<number>;
     remove: (endpoint: string, id: number) => Promise<void>;
     get: (endpoint: string) => Promise<unknown>;
+    patch: (endpoint: string, id: number, payload: Record<string, unknown>) => Promise<void>;
   };
 };
 
@@ -47,6 +48,14 @@ export const test = base.extend<Fixtures>({
         const res = await request.get(url, { headers });
         if (!res.ok()) throw new Error(`GET ${url} failed: ${res.status()}`);
         return res.json();
+      },
+      async patch(endpoint, id, payload) {
+        const url = `${API_BASE}/${endpoint}/${id}/`;
+        const res = await request.patch(url, { headers, data: payload });
+        if (!res.ok()) {
+          const body = await res.text();
+          throw new Error(`PATCH ${url} failed (${res.status()}): ${body}`);
+        }
       },
     });
   },

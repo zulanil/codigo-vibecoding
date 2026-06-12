@@ -21,6 +21,17 @@ export interface TokenObtainPayload {
 export interface TokenResponse {
   access: string;
   refresh: string;
+  is_superuser: boolean;
+  groups: string[];
+  permissions: string[];
+}
+
+export interface AuthPermission {
+  id: number;
+  codename: string;
+  name: string;
+  module: string;
+  full_codename: string;
 }
 
 export interface TokenRefreshPayload {
@@ -29,6 +40,34 @@ export interface TokenRefreshPayload {
 
 export interface TokenVerifyPayload {
   token: string;
+}
+
+export interface AuthGroup {
+  id: number;
+  name: string;
+  permissions: AuthPermission[];
+}
+
+export interface AuthUser {
+  id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_active: boolean;
+  is_superuser: boolean;
+  groups: AuthGroup[];
+}
+
+export interface AuthUserPayload {
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_active: boolean;
+  is_superuser: boolean;
+  groups: number[];
+  password?: string;
 }
 
 // ---- Base común ----

@@ -63,7 +63,7 @@ export default function TopCustomersChart({ shipments, customers }: TopCustomers
           contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--card-foreground)' }}
           labelStyle={{ color: 'var(--foreground)', fontWeight: 600 }}
           itemStyle={{ color: 'var(--muted-foreground)' }}
-          formatter={(value: number) => [value, 'Envíos']}
+          formatter={(value) => [Number(value ?? 0), 'Envíos']}
         />
         <Bar dataKey="count" radius={[0, 4, 4, 0]}>
           {chartData.map((_, index) => (

@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import type { Product } from "@/lib/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useModulePermissions } from "@/lib/hooks/usePermission";
 
 export function ProductTable() {
   const searchParams = useSearchParams();
@@ -86,7 +87,8 @@ export function ProductTable() {
     ? [{ id: ordering.replace("-", ""), desc: ordering.startsWith("-") }]
     : [];
 
-  const columns = getProductColumns(suppliersMap, setProductToDelete);
+  const { canEdit, canDelete } = useModulePermissions("products");
+  const columns = getProductColumns(suppliersMap, setProductToDelete, canEdit, canDelete);
 
   const table = useReactTable({
     data: data?.results ?? [],

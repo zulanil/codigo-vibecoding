@@ -27,8 +27,15 @@ Body:
 
 Response:
 ```json
-{ "access": "<jwt>", "refresh": "<jwt>" }
+{
+  "access": "<jwt>",
+  "refresh": "<jwt>",
+  "is_superuser": true,
+  "groups": ["Operador"]
+}
 ```
+
+El JWT también lleva `is_superuser` y `groups` en el payload — el frontend los decodifica del cookie `access_token`.
 
 ### Renovar access token
 
@@ -47,6 +54,78 @@ POST /auth/token/verify/
 
 Body: `{ "token": "<token>" }`
 Response: `{}` (200 si válido, 401 si no)
+
+### Usuario actual
+
+```
+GET /auth/me/
+```
+
+Requiere: `IsAuthenticated`. Devuelve el usuario autenticado con sus grupos expandidos.
+
+Response:
+```json
+{
+  "id": 1,
+  "username": "luz",
+  "email": "cyl.lina@gmail.com",
+  "first_name": "",
+  "last_name": "",
+  "is_active": true,
+  "is_superuser": true,
+  "groups": []
+}
+```
+
+### Gestión de usuarios (solo superadmin)
+
+Permiso requerido: `is_superuser = true`. Usuarios normales reciben 403.
+
+```
+GET    /auth/users/              → lista paginada de usuarios
+POST   /auth/users/              → crear usuario
+GET    /auth/users/{id}/         → detalle de usuario
+PATCH  /auth/users/{id}/         → actualizar usuario (parcial)
+PUT    /auth/users/{id}/         → actualizar usuario (total)
+DELETE /auth/users/{id}/         → eliminar usuario (hard delete)
+POST   /auth/users/{id}/deactivate/  → desactivar usuario (is_active=false)
+```
+
+Campos en response (GET):
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `id` | number | read-only |
+| `username` | string | único |
+| `email` | string | |
+| `first_name` | string | |
+| `last_name` | string | |
+| `is_active` | boolean | |
+| `is_superuser` | boolean | |
+| `groups` | `[{id, name}]` | expandido en lectura |
+
+Campos en payload (POST/PATCH/PUT):
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `username` | string | requerido en create |
+| `password` | string | requerido en create, opcional en update (min 8 chars) |
+| `email` | string | opcional |
+| `first_name` | string | opcional |
+| `last_name` | string | opcional |
+| `is_active` | boolean | |
+| `is_superuser` | boolean | |
+| `groups` | number[] | IDs de grupos (escribe M2M) |
+
+Filtros: `?search=` (username, email, first_name, last_name)
+
+### Grupos (solo superadmin)
+
+```
+GET /auth/groups/   → lista todos los grupos disponibles (sin paginación)
+```
+
+Response: `[{ "id": 1, "name": "Operador" }, ...]`
+
+Grupos por defecto creados: `Operador`, `Supervisor`, `Conductor`, `Administrador`.
 
 ### Header requerido en endpoints protegidos
 

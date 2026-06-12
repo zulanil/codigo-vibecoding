@@ -58,7 +58,7 @@ export default function ShipmentsOverTimeChart({
           contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--card-foreground)' }}
           labelStyle={{ color: 'var(--foreground)', fontWeight: 600 }}
           itemStyle={{ color: 'var(--muted-foreground)' }}
-          formatter={(value: number) => [value, 'Envíos']}
+          formatter={(value) => [Number(value ?? 0), 'Envíos']}
           labelFormatter={(label) => `Mes: ${label}`}
         />
         <Area

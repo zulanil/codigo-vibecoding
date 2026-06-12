@@ -14,6 +14,7 @@ import { getRoutes } from "@/lib/api/routes";
 import { getTransports } from "@/lib/api/transports";
 import { getWarehouses } from "@/lib/api/warehouses";
 import { getRouteColumns } from "./RouteColumns";
+import { useModulePermissions } from "@/lib/hooks/usePermission";
 import {
   Table,
   TableBody,
@@ -96,7 +97,8 @@ export function RouteTable() {
     ? [{ id: ordering.replace(/^-/, ""), desc: ordering.startsWith("-") }]
     : [];
 
-  const columns = getRouteColumns(transportsMap, warehousesMap);
+  const { canEdit, canDelete } = useModulePermissions("routes");
+  const columns = getRouteColumns(transportsMap, warehousesMap, canEdit, canDelete);
 
   const table = useReactTable({
     data: data?.results ?? [],

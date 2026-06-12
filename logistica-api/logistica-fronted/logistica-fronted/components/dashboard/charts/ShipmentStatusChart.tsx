@@ -80,7 +80,7 @@ export default function ShipmentStatusChart({ data }: ShipmentStatusChartProps) 
           contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--card-foreground)' }}
           labelStyle={{ color: 'var(--foreground)', fontWeight: 600 }}
           itemStyle={{ color: 'var(--muted-foreground)' }}
-          formatter={(value: number, name: string) => [value, name]}
+          formatter={(value, name) => [Number(value ?? 0), String(name ?? '')]}
         />
         <Legend
           formatter={(value) => (

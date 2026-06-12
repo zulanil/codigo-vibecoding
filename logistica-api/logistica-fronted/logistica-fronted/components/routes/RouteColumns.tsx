@@ -19,7 +19,9 @@ const STATUS_LABELS: Record<string, string> = {
 
 export function getRouteColumns(
   transportsMap: Map<number, string>,
-  warehousesMap: Map<number, string>
+  warehousesMap: Map<number, string>,
+  canEdit = true,
+  canDelete = true
 ): ColumnDef<Route>[] {
   return [
     {
@@ -115,14 +117,16 @@ export function getRouteColumns(
       header: "Acciones",
       cell: ({ row }) => (
         <div className="flex gap-1">
-          <Link
-            href={`/routes/${row.original.id}`}
-            aria-label={`Editar ${row.original.name}`}
-            className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-          >
-            <Pencil className="h-4 w-4" />
-          </Link>
-          <DeleteRouteDialog id={row.original.id} />
+          {canEdit && (
+            <Link
+              href={`/routes/${row.original.id}`}
+              aria-label={`Editar ${row.original.name}`}
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+            >
+              <Pencil className="h-4 w-4" />
+            </Link>
+          )}
+          {canDelete && <DeleteRouteDialog id={row.original.id} />}
         </div>
       ),
     },

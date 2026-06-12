@@ -27,6 +27,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import type { Customer } from "@/lib/types";
 import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useModulePermissions } from "@/lib/hooks/usePermission";
 
 const TYPE_FILTERS = [
   { label: "Todos", value: "" },
@@ -76,7 +77,8 @@ export function CustomerTable() {
     ? [{ id: ordering.replace("-", ""), desc: ordering.startsWith("-") }]
     : [];
 
-  const columns = getCustomerColumns(setCustomerToDelete);
+  const { canEdit, canDelete } = useModulePermissions("customers");
+  const columns = getCustomerColumns(setCustomerToDelete, canEdit, canDelete);
 
   const table = useReactTable({
     data: data?.results ?? [],

@@ -12,6 +12,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { getDrivers } from "@/lib/api/drivers";
 import { getDriverColumns } from "./DriverColumns";
+import { useModulePermissions } from "@/lib/hooks/usePermission";
 import { DeleteDriverDialog } from "./DeleteDriverDialog";
 import {
   Table,
@@ -77,7 +78,8 @@ export function DriverTable() {
     ? [{ id: ordering.replace("-", ""), desc: ordering.startsWith("-") }]
     : [];
 
-  const columns = getDriverColumns(setDriverToDelete);
+  const { canEdit, canDelete } = useModulePermissions("drivers");
+  const columns = getDriverColumns(setDriverToDelete, canEdit, canDelete);
 
   const table = useReactTable({
     data: data?.results ?? [],

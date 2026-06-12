@@ -1,8 +1,6 @@
 import { Suspense } from "react";
-import Link from "next/link";
-import { Plus } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
 import { ShipmentTable } from "@/components/shipments/ShipmentTable";
+import { CreateButton } from "@/components/ui/create-button";
 
 export default async function ShipmentsPage({
   searchParams,
@@ -14,9 +12,7 @@ export default async function ShipmentsPage({
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Envíos</h1>
-        <Link href="/shipments/new" className={buttonVariants()}>
-          <Plus className="h-4 w-4" />Nuevo Envío
-        </Link>
+        <CreateButton permission="shipments.add_shipment" href="/shipments/new" label="Nuevo Envío" />
       </div>
       <Suspense
         fallback={

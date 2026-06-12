@@ -140,6 +140,7 @@ export function ShipmentForm({ shipment }: Props) {
       customer: Number(values.customer),
       origin_warehouse: Number(values.origin_warehouse),
       route: values.route === "" ? null : Number(values.route),
+      actual_delivery_date: null,
     };
   }
 

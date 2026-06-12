@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { Warehouse } from "@/lib/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useModulePermissions } from "@/lib/hooks/usePermission";
 
 export function WarehouseTable() {
   const searchParams = useSearchParams();
@@ -85,7 +86,8 @@ export function WarehouseTable() {
     ? [{ id: ordering.replace("-", ""), desc: ordering.startsWith("-") }]
     : [];
 
-  const columns = getWarehouseColumns(setWarehouseToDelete);
+  const { canEdit, canDelete } = useModulePermissions("warehouses");
+  const columns = getWarehouseColumns(setWarehouseToDelete, canEdit, canDelete);
 
   const table = useReactTable({
     data: data?.results ?? [],

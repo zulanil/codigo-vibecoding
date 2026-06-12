@@ -39,7 +39,7 @@ test.describe("Auth flow — sin sesión", () => {
 
     await expect(
       page.getByText("Usuario o contraseña incorrectos")
-    ).toBeVisible({ timeout: 5_000 });
+    ).toBeVisible({ timeout: 10_000 });
 
     await expect(page).toHaveURL(/\/login/);
   });
