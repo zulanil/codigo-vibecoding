@@ -10,14 +10,19 @@ if RAILWAY_DOMAIN:
     CSRF_TRUSTED_ORIGINS = [f'https://{RAILWAY_DOMAIN}']
     
 
+DATABASE_URL = config('DATABASE_URL', default=None)
+
+if not DATABASE_URL:
+    raise Exception("DATABASE_URL no está configurada en Railway")
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL'),
+    'default': dj_database_url.parse(
+        DATABASE_URL,
         conn_max_age=600,
-        ssl_require=True,
+        ssl_require=True
     )
 }
+MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='').split(',')
 
