@@ -47,3 +47,5 @@ Thumbs.db
 # Lock files (keep package-lock.json, ignore yarn/pnpm)
 yarn.lock
 pnpm-lock.yaml
+
+.vercel
