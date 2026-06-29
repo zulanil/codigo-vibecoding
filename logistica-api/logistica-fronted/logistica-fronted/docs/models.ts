@@ -131,9 +131,10 @@ export interface Product extends BaseEntity {
   width_cm: string;
   height_cm: string;
   unit_price: string;
+  image_url: string | null;
 }
 
-export type ProductPayload = Omit<Product, keyof BaseEntity>;
+export type ProductPayload = Omit<Product, keyof BaseEntity | "image_url">;
 
 // ---- Drivers ----
 

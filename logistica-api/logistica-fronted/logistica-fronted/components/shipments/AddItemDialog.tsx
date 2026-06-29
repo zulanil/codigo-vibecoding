@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { createShipmentItem } from "@/lib/api/shipments";
 import { getProducts } from "@/lib/api/products";
+import { ProductThumbnail } from "@/components/products/ProductThumbnail";
 import type { ShipmentProductPayload } from "@/lib/types";
 import {
   Dialog,
@@ -131,7 +132,10 @@ export function AddItemDialog({ shipmentId, open, onClose }: Props) {
                       <SelectContent>
                         {productsData?.results.map((p) => (
                           <SelectItem key={p.id} value={String(p.id)}>
-                            {p.name} ({p.sku})
+                            <div className="flex items-center gap-2">
+                              <ProductThumbnail imageUrl={p.image_url} name={p.name} />
+                              <span>{p.name} ({p.sku})</span>
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>

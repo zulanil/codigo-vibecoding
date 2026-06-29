@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { AddItemDialog } from "./AddItemDialog";
-import type { ShipmentProduct } from "@/lib/types";
+import { ProductThumbnail } from "@/components/products/ProductThumbnail";
+import type { ShipmentProduct, Product } from "@/lib/types";
 
 interface Props {
   shipmentId: number;
@@ -35,8 +36,8 @@ export function ShipmentItemsPanel({ shipmentId, items }: Props) {
     staleTime: 5 * 60 * 1000,
   });
 
-  const productsMap = new Map<number, string>(
-    productsData?.results.map((p) => [p.id, p.name]) ?? []
+  const productsMap = new Map<number, Pick<Product, "name" | "image_url">>(
+    productsData?.results.map((p) => [p.id, { name: p.name, image_url: p.image_url }]) ?? []
   );
 
   const columns: ColumnDef<ShipmentProduct>[] = [
@@ -45,7 +46,14 @@ export function ShipmentItemsPanel({ shipmentId, items }: Props) {
       header: "Producto",
       cell: ({ row }) => {
         const productId = row.original.product;
-        return productsMap.get(productId) ?? String(productId);
+        const product = productsMap.get(productId);
+        const name = product?.name ?? String(productId);
+        return (
+          <div className="flex items-center gap-2">
+            <ProductThumbnail imageUrl={product?.image_url ?? null} name={name} />
+            <span>{name}</span>
+          </div>
+        );
       },
     },
     {

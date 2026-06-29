@@ -7,6 +7,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
+import { useRef, useState } from "react";
+import { Package, Upload, X } from "lucide-react";
 import { createProduct, updateProduct } from "@/lib/api/products";
 import { getSuppliers } from "@/lib/api/suppliers";
 import type { Product } from "@/lib/types";
@@ -56,6 +58,32 @@ export function ProductForm({ product }: Props) {
   const router = useRouter();
   const isEdit = !!product;
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [removeImage, setRemoveImage] = useState(false);
+
+  const currentImageUrl = isEdit ? (product.image_url ?? null) : null;
+  const showCurrentImage = currentImageUrl && !removeImage && !imageFile;
+  const showPreview = !!imageFile;
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setRemoveImage(false);
+    const reader = new FileReader();
+    reader.onload = (ev) => setPreviewUrl(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  function handleRemoveImage() {
+    setImageFile(null);
+    setPreviewUrl(null);
+    setRemoveImage(true);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
   const { data: suppliersData, isLoading: loadingSuppliers } = useQuery({
     queryKey: ["suppliers-list"],
     queryFn: () => getSuppliers(),
@@ -80,9 +108,11 @@ export function ProductForm({ product }: Props) {
   const { mutate, isPending } = useMutation({
     mutationFn: (values: FormValues) => {
       const payload = { ...values, supplier: Number(values.supplier) };
-      return isEdit
-        ? updateProduct(product.id, payload)
-        : createProduct(payload);
+      if (isEdit) {
+        const imageArg = imageFile ?? (removeImage ? null : undefined);
+        return updateProduct(product.id, payload, imageArg);
+      }
+      return createProduct(payload, imageFile ?? undefined);
     },
     onSuccess: () => {
       toast.success(isEdit ? "Producto actualizado" : "Producto creado");
@@ -259,6 +289,62 @@ export function ProductForm({ product }: Props) {
               </FormItem>
             )}
           />
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-sm font-medium leading-none">
+            Imagen{" "}
+            <span className="font-normal text-muted-foreground">(opcional, máx 5 MB)</span>
+          </p>
+          <div className="flex items-center gap-4">
+            {showCurrentImage ? (
+              <img
+                src={currentImageUrl!}
+                alt="Imagen actual"
+                className="h-16 w-16 rounded object-cover shrink-0"
+              />
+            ) : showPreview ? (
+              <img
+                src={previewUrl!}
+                alt="Vista previa"
+                className="h-16 w-16 rounded object-cover shrink-0"
+              />
+            ) : (
+              <div className="h-16 w-16 rounded bg-muted flex items-center justify-center shrink-0">
+                <Package className="h-6 w-6 text-muted-foreground" />
+              </div>
+            )}
+            <div className="flex flex-col gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {showCurrentImage || showPreview ? "Cambiar imagen" : "Subir imagen"}
+              </Button>
+              {(showCurrentImage || showPreview) && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRemoveImage}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Quitar imagen
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="flex gap-3">

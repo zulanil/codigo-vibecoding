@@ -6,6 +6,7 @@ import { Pencil, Trash2, ArrowUpDown } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/lib/types";
+import { ProductThumbnail } from "./ProductThumbnail";
 
 export function getProductColumns(
   suppliersMap: Map<number, string>,
@@ -14,6 +15,14 @@ export function getProductColumns(
   canDelete = true,
 ): ColumnDef<Product>[] {
   return [
+    {
+      id: "image",
+      header: "",
+      cell: ({ row }) => (
+        <ProductThumbnail imageUrl={row.original.image_url} name={row.original.name} />
+      ),
+      size: 48,
+    },
     {
       accessorKey: "sku",
       enableSorting: true,
