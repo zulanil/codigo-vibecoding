@@ -25,12 +25,7 @@ DATABASES = {
 
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
-_cors_origins = config('CORS_ALLOWED_ORIGINS', default='')
-CORS_ALLOWED_ORIGINS = [o for o in _cors_origins.split(',') if o]
-
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://logistica-fronted.*\.vercel\.app$",
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
