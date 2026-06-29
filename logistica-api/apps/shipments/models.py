@@ -34,6 +34,7 @@ class Shipment(models.Model):
     declared_value = models.DecimalField(max_digits=12, decimal_places=2)
     shipping_cost = models.DecimalField(max_digits=12, decimal_places=2)
     notes = models.TextField(blank=True, null=True)
+    delivery_photo = models.ImageField(upload_to='shipments/', blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

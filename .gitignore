@@ -10,6 +10,11 @@ __pycache__/
 .env.local
 .env.*.local
 
+# GCP credentials — never commit
+gcp-key.json
+*-key.json
+*.json.key
+
 # Build output
 dist/
 dist-ssr/

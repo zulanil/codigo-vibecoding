@@ -28,6 +28,7 @@ class Transport(models.Model):
     vehicle_type = models.CharField(max_length=30, choices=VEHICLE_TYPE_CHOICES)
     capacity_kg = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=AVAILABLE)
+    image = models.ImageField(upload_to='transports/', blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
