@@ -1,16 +1,11 @@
-"""
-WSGI config for config project.
-
-It exposes the WSGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/6.0/howto/deployment/wsgi/
-"""
-
 import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
+# Auto-detect Railway: DATABASE_URL is always present in Railway deployments
+if os.environ.get('DATABASE_URL') or os.environ.get('RAILWAY_PUBLIC_DOMAIN'):
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.production')
+else:
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
 
 application = get_wsgi_application()
