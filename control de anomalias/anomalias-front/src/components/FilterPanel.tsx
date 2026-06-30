@@ -26,7 +26,8 @@ export default function FilterPanel({
   onAdd, onUpdate, onRemove, onSigmaChange, onAnalizar, onBack, onReset, loading,
 }: Props) {
   const isAdmin = role === 'admin'
-  const disabled = !isAdmin || loading   // deshabilita durante análisis Y para no-admins
+  const disabled = !isAdmin || loading
+  const hasSegmentar = filters.some(f => f.tipo === 'segmentar')
 
   return (
     <div className="space-y-6">
@@ -71,6 +72,7 @@ export default function FilterPanel({
               </button>
             )}
             <button onClick={onAdd} disabled={disabled}
+              title={hasSegmentar ? 'Ya hay un filtro Segmentar activo' : undefined}
               className="flex items-center gap-1.5 text-sm border border-slate-600 text-slate-300
                 hover:border-cyan-500/50 hover:text-cyan-400 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40">
               <Plus size={14} /> Añadir filtro
@@ -114,7 +116,8 @@ export default function FilterPanel({
                   className={INPUT_CLS}>
                   <option value="rango">Rango numérico</option>
                   <option value="texto">Contiene texto</option>
-                  <option value="categoria">Categorías (checkbox)</option>
+                  <option value="categoria">Categorías (filtrar)</option>
+                  <option value="segmentar">⚡ Segmentar por</option>
                 </select>
 
                 {/* Inputs condicionales */}
@@ -135,20 +138,31 @@ export default function FilterPanel({
                     className={`${INPUT_CLS} flex-1 min-w-[140px]`} />
                 )}
 
-                {f.tipo === 'categoria' && f.columna && uniqueVals.length > 0 && (
+                {(f.tipo === 'categoria' || f.tipo === 'segmentar') && f.columna && uniqueVals.length > 0 && (
                   <div className="w-full mt-1">
-                    <p className="text-xs text-slate-500 mb-2">
-                      {uniqueVals.length} valores únicos — sin selección = todos pasan
+                    <p className="text-xs mb-2">
+                      {f.tipo === 'segmentar'
+                        ? <span className="text-violet-400">
+                            ⚡ Análisis separado por cada valor seleccionado
+                            <span className="text-slate-500"> — vacío = todos los valores únicos</span>
+                          </span>
+                        : <span className="text-slate-500">
+                            {uniqueVals.length} valores únicos — vacío = todos pasan
+                          </span>
+                      }
                     </p>
                     <div className="max-h-36 overflow-y-auto grid grid-cols-3 sm:grid-cols-4 gap-1.5">
                       {uniqueVals.map(val => {
                         const checked = f.categorias.includes(val)
+                        const accentColor = f.tipo === 'segmentar' ? 'violet' : 'cyan'
                         return (
                           <label key={val}
                             className={`flex items-center gap-1.5 text-xs cursor-pointer px-2 py-1 rounded-lg border transition-colors
                               ${disabled ? 'opacity-40 cursor-not-allowed' : ''}
                               ${checked
-                                ? 'border-cyan-500/50 bg-cyan-500/10 text-cyan-300'
+                                ? accentColor === 'violet'
+                                  ? 'border-violet-500/50 bg-violet-500/10 text-violet-300'
+                                  : 'border-cyan-500/50 bg-cyan-500/10 text-cyan-300'
                                 : 'border-slate-700 text-slate-400 hover:border-slate-600'}`}>
                             <input type="checkbox" checked={checked} disabled={disabled}
                               onChange={() => {
@@ -157,7 +171,7 @@ export default function FilterPanel({
                                   : [...f.categorias, val]
                                 onUpdate(f.id, { categorias: next })
                               }}
-                              className="accent-cyan-500" />
+                              className={accentColor === 'violet' ? 'accent-violet-500' : 'accent-cyan-500'} />
                             <span className="truncate">{val}</span>
                           </label>
                         )

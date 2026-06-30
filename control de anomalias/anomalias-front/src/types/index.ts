@@ -39,7 +39,7 @@ export interface AnalysisResult {
 export interface FilterConfig {
   id: string
   columna: string
-  tipo: 'rango' | 'texto' | 'categoria'
+  tipo: 'rango' | 'texto' | 'categoria' | 'segmentar'
   min: string
   max: string
   texto: string

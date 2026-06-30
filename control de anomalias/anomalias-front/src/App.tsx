@@ -3,7 +3,7 @@ import { RotateCcw, ArrowLeft, ShieldAlert, BarChart2, Activity, AlertCircle, Za
 import type { AnalysisResult, FilterConfig, MergedPoint } from './types'
 import { useAuth } from './contexts/AuthContext'
 import { limpiarCSV, procesarDatos } from './services/api'
-import { applyFilters, mergeResults } from './utils/csv'
+import { applyFilters, mergeResults, getUniqueValues } from './utils/csv'
 import LoginPage from './components/LoginPage'
 import LoginBar from './components/LoginBar'
 import StatCard from './components/StatCard'
@@ -96,9 +96,36 @@ function Dashboard({ role, isAdmin }: { role: 'admin' | 'editor'; isAdmin: boole
   async function handleAnalizar() {
     setError(null); setLoading(true)
     try {
-      const csvFiltrado = applyFilters(csvLimpio, filters)
-      const rawResults = await Promise.all(colsY.map(cy => procesarDatos(csvFiltrado, colX, cy, sigma)))
-      setResults(rawResults.map((data, i) => ({ colY: colsY[i], data })))
+      const segFilter = filters.find(f => f.tipo === 'segmentar' && f.columna)
+      const baseFilters = filters.filter(f => f.tipo !== 'segmentar')
+
+      let rawResults: AnalysisResult[]
+
+      if (segFilter) {
+        // Valores a segmentar: seleccionados o todos los únicos
+        const segValues = segFilter.categorias.length > 0
+          ? segFilter.categorias
+          : getUniqueValues(csvLimpio, segFilter.columna)
+
+        // Por cada valor del segmento × cada colY → análisis independiente
+        const tasks = segValues.flatMap(segVal =>
+          colsY.map(async cy => {
+            const csvSeg = applyFilters(csvLimpio, [
+              ...baseFilters,
+              { ...segFilter, tipo: 'categoria' as const, categorias: [segVal] },
+            ])
+            const data = await procesarDatos(csvSeg, colX, cy, sigma)
+            return { colY: `${cy} [${segVal}]`, data } as AnalysisResult
+          })
+        )
+        rawResults = await Promise.all(tasks)
+      } else {
+        const csvFiltrado = applyFilters(csvLimpio, filters)
+        const data = await Promise.all(colsY.map(cy => procesarDatos(csvFiltrado, colX, cy, sigma)))
+        rawResults = data.map((d, i) => ({ colY: colsY[i], data: d }))
+      }
+
+      setResults(rawResults)
       setStep(4)
     } catch (e) { setError((e as Error).message) }
     finally { setLoading(false) }
