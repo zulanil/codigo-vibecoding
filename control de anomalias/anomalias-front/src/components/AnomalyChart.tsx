@@ -182,25 +182,21 @@ export default function AnomalyChart({ data, colX, colsY, results, sigma }: Prop
         </div>
       </div>
 
-      {/* Un chart por métrica */}
+      {/* Un chart por resultado (soporta segmentación) */}
       <div className="divide-y divide-slate-800/40">
-        {colsY.map((cy, i) => {
-          const result = results.find(r => r.colY === cy)
-          if (!result) return null
-          return (
-            <div key={cy} className={i > 0 ? 'pt-2' : ''}>
-              <SingleChart
-                cy={cy}
-                color={LINE_COLORS[i % LINE_COLORS.length]}
-                colX={colX}
-                data={data}
-                result={result}
-                sigma={sigma}
-                isLast={i === colsY.length - 1}
-              />
-            </div>
-          )
-        })}
+        {results.map((result, i) => (
+          <div key={result.colY} className={i > 0 ? 'pt-2' : ''}>
+            <SingleChart
+              cy={result.colY}
+              color={LINE_COLORS[i % LINE_COLORS.length]}
+              colX={colX}
+              data={data}
+              result={result}
+              sigma={sigma}
+              isLast={i === results.length - 1}
+            />
+          </div>
+        ))}
       </div>
     </div>
   )
