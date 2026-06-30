@@ -3,6 +3,164 @@
 
 ---
 
+## Resumen Ejecutivo — Justificación Fullstack con Vibe Coding
+
+Este proyecto fue desarrollado en su totalidad usando **Vibe Coding** (desarrollo asistido por IA con Claude Code), lo que permitió implementar un sistema fullstack completo — backend, frontend, base de datos cloud, testing y deploy — en una fracción del tiempo convencional.
+
+### ¿Qué es el stack fullstack aquí?
+
+```
+Usuario (navegador)
+    │
+    │  HTTPS
+    ▼
+Vercel  ──────  Frontend (React + Vite + TypeScript + Tailwind)
+                    │
+                    │  REST API (HTTPS + JWT)
+                    ▼
+Railway  ─────  Backend (FastAPI + Python)
+                    │
+                    │  SQL (SSL)
+                    ▼
+Neon  ────────  Base de datos (PostgreSQL serverless)
+```
+
+---
+
+### Backend — Resumen en tabla
+
+| Qué | Tecnología | Para qué sirve |
+|-----|-----------|----------------|
+| Framework | **FastAPI** | Crea los endpoints REST, valida datos automáticamente con Pydantic, genera docs Swagger en `/docs` |
+| ORM | **SQLAlchemy** | Mapea tablas a clases Python (User, Analysis, Report), ejecuta queries sin escribir SQL crudo |
+| Base de datos | **Neon (PostgreSQL)** | Almacena usuarios, auditoría de análisis y reportes compartidos en cloud |
+| Autenticación | **JWT (python-jose)** | Genera tokens seguros al hacer login, válidos 8 horas, rol incluido en el payload |
+| Hash contraseñas | **bcrypt** | Guarda contraseñas con hash irreversible (nunca en texto plano) |
+| Análisis estadístico | **pandas + numpy** | Limpia el CSV, calcula media/desviación estándar, detecta anomalías Shewhart |
+| Servidor ASGI | **uvicorn** | Sirve la aplicación FastAPI en producción |
+| Deploy | **Railway** | Hostea el backend Python en la nube con builds automáticos |
+| Config deploy | **Procfile + nixpacks.toml** | Le dice a Railway cómo instalar dependencias y qué comando arrancar |
+| Testing | **pytest + httpx** | 30 tests SDD que validan cada endpoint contra la especificación OpenAPI |
+
+**Archivos clave del backend:**
+
+| Archivo | Rol |
+|---------|-----|
+| `main.py` | Punto de entrada: configura CORS, monta routers, seed de usuarios al iniciar |
+| `analytics.py` | Lógica Shewhart: limpieza CSV, cálculo estadístico, downsampling, guard NaN |
+| `models.py` | Tablas: `User`, `Analysis`, `Report` |
+| `database.py` | Conexión a Neon con `pool_pre_ping` (reconecta si Neon suspende por inactividad) |
+| `auth/router.py` | Endpoints de login, registro, CRUD de usuarios |
+| `reports/router.py` | Endpoints para guardar y compartir análisis |
+| `Procfile` | `web: uvicorn main:app --host 0.0.0.0 --port $PORT` |
+| `nixpacks.toml` | Especifica Python 3.11 y el comando de instalación para Railway |
+
+---
+
+### Frontend — Resumen en tabla
+
+| Qué | Tecnología | Para qué sirve |
+|-----|-----------|----------------|
+| Build tool | **Vite** | Compila y empaqueta React+TypeScript ultra rápido; hot reload en desarrollo |
+| Framework UI | **React 19** | Componentes declarativos, manejo de estado con hooks (useState, useEffect, useMemo) |
+| Tipado | **TypeScript** | Detecta errores en compile-time; tipado de props, API responses, filtros y roles |
+| Estilos | **Tailwind CSS 3** | Clases utility — glassmorphism, dark mode, responsive, sin escribir CSS custom excepto animaciones |
+| Gráficas | **Plotly.js** | Cartas de control Shewhart interactivas: zoom, pan, export PNG, shapes independientes del eje Y |
+| Iconos | **Lucide React** | SVG icons consistentes (sin emojis) — ShieldCheck, Activity, Eye, Users, Save… |
+| Tipografía | **Fira Code** (Google Fonts) | Fuente monoespaciada para valores numéricos y branding del producto |
+| Diseño | **Skill ui-ux-pro-max** | 99 guías UX aplicadas: accesibilidad, animaciones, formularios, interacción táctil |
+| Testing | **Vitest** | 13 unit tests de lógica pura en `csv.ts` |
+| Deploy | **Vercel** | Hostea el frontend estático con CDN global |
+
+**Archivos clave del frontend:**
+
+| Archivo | Rol |
+|---------|-----|
+| `vite.config.ts` | Config Vite: alias, build target |
+| `tsconfig.json` | TypeScript: modo estricto, `"jsx": "react-jsx"`, `moduleResolution: bundler` |
+| `tailwind.config.js` | Extiende tema: colores, glassmorphism custom |
+| `src/main.tsx` | Entrada React: monta `<App>` con `<AuthProvider>` |
+| `src/App.tsx` | Lógica principal: 4 pasos de análisis, segmentación, vistas admin/reportes |
+| `src/services/api.ts` | Todas las llamadas HTTP al backend (limpiar, procesar, usuarios, reportes) |
+| `src/utils/csv.ts` | Lógica pura: parsear CSV, aplicar filtros, merge de resultados por eje X |
+| `src/contexts/AuthContext.tsx` | Estado global de autenticación: token JWT en localStorage |
+| `src/types/index.ts` | Interfaces TypeScript: Role, AuthUser, AnalysisResult, FilterConfig, ReportRecord… |
+
+---
+
+### Dónde entra cada herramienta de infraestructura
+
+| Herramienta | Dónde vive | Cuándo actúa |
+|-------------|-----------|--------------|
+| **Neon** | Cloud (neon.tech) | Siempre — cada query SQL (login, guardar reporte, auditar análisis) pasa por Neon |
+| **Railway** | Cloud (railway.app) | Ejecuta el backend Python 24/7; recibe el deploy con `railway up` |
+| **Vercel** | Cloud (vercel.com) | Sirve el frontend estático; CDN global; recibe deploy con `vercel --prod` |
+| **GitHub** | Cloud (github.com/zulanil/codigo-vibecoding) | Fuente de verdad del código; Railway y Vercel pueden auto-deployar desde aquí |
+
+---
+
+### Pasos exactos de deploy — Railway (Backend)
+
+| Paso | Comando / Acción | Dónde |
+|------|-----------------|-------|
+| 1 | Instalar Railway CLI | `npm install -g @railway/cli` |
+| 2 | Login | `railway login` (abre navegador) |
+| 3 | Crear proyecto | `railway init` dentro de `anomalias-api/` |
+| 4 | Primer deploy | `railway up --service "control-de-anomalias"` |
+| 5 | Configurar variables | Railway dashboard → Variables → `DATABASE_URL`, `SECRET_KEY` |
+| 6 | Verificar que arrancó | Railway dashboard → Logs → ver `Uvicorn running` |
+| 7 | Redeploy en cada cambio | `railway up --service "control-de-anomalias"` |
+
+**¿Dónde entra el Procfile?**
+Railway lee el `Procfile` para saber qué proceso levantar:
+```
+web: uvicorn main:app --host 0.0.0.0 --port $PORT
+```
+Y `nixpacks.toml` para saber cómo hacer el build:
+```toml
+[phases.setup]
+nixPkgs = ["python311"]          ← instala Python 3.11
+
+[phases.install]
+cmds = ["pip install -r requirements.txt"]   ← instala dependencias
+
+[start]
+cmd = "uvicorn main:app --host 0.0.0.0 --port $PORT"   ← arranca el servidor
+```
+
+---
+
+### Pasos exactos de deploy — Vercel (Frontend)
+
+| Paso | Comando / Acción | Dónde |
+|------|-----------------|-------|
+| 1 | Instalar Vercel CLI | `npm install -g vercel` |
+| 2 | Login | `vercel login` (abre navegador) |
+| 3 | Linkear proyecto | `vercel link` dentro de `anomalias-front/` |
+| 4 | Configurar variable | Vercel dashboard → Settings → `VITE_API_URL=https://<railway-url>` |
+| 5 | Deploy a producción | `vercel --prod` |
+| 6 | Redeploy en cada cambio | `vercel --prod` |
+
+**¿Dónde entra `VITE_API_URL`?**
+Vite expone variables con prefijo `VITE_` al frontend en compile-time:
+```typescript
+// src/contexts/AuthContext.tsx
+const API = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+```
+En local apunta a `localhost:8000`. En Vercel apunta al backend de Railway.
+
+---
+
+### Cuándo usamos TypeScript, Vite y Tailwind
+
+| Herramienta | Momento de uso | Beneficio concreto |
+|-------------|---------------|-------------------|
+| **TypeScript** | Todo el desarrollo frontend | Detectó errores de tipo en Plotly (`Datum`), en props de componentes, en responses del API. Sin TS, esos bugs hubieran llegado a producción |
+| **Vite** | Dev: `npm run dev` / Prod: `vercel --prod` ejecuta `vite build` | Build en ~2s vs ~30s con webpack. Hot reload instantáneo al editar componentes |
+| **Tailwind** | Todos los componentes `.tsx` | Glassmorphism, dark mode y responsive con clases directas. Sin Tailwind, hubiera requerido un archivo CSS separado por componente |
+
+---
+
 ## Descripción General
 
 Sistema web para detección automática de anomalías en datasets industriales o científicos. Implementa la metodología estadística de **Cartas de Control Shewhart** (Media ± σ) con una interfaz moderna de análisis, roles de usuario diferenciados, persistencia en base de datos cloud, análisis compartibles entre usuarios, y filtros avanzados con segmentación de datos.
