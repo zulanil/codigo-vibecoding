@@ -1,6 +1,13 @@
+import math
 import pandas as pd
 import numpy as np
 from io import StringIO
+
+
+def _safe(val: float) -> float:
+    """Convierte nan/inf a 0 para serialización JSON segura."""
+    f = float(val)
+    return 0.0 if (math.isnan(f) or math.isinf(f)) else f
 
 MAX_DISPLAY_POINTS = 3_000  # puntos máximos enviados al frontend
 
@@ -32,10 +39,10 @@ def calcular_anomalias_shewhart(
     df_trabajo = df_trabajo.dropna(subset=[col_y])
 
     serie = df_trabajo[col_y]
-    media = float(serie.mean())
-    desv = float(serie.std())
-    lcs = media + sigma * desv
-    lci = media - sigma * desv
+    media = _safe(serie.mean())
+    desv  = _safe(serie.std()) if len(serie) > 1 else 0.0
+    lcs   = media + sigma * desv
+    lci   = media - sigma * desv
 
     # ── 2. Etiquetar anomalías sobre dataset completo ────────────────────────
     df_trabajo["anomalia"] = (df_trabajo[col_y] > lcs) | (df_trabajo[col_y] < lci)
@@ -63,10 +70,10 @@ def calcular_anomalias_shewhart(
     )
 
     return {
-        "media":                    round(media, 6),
-        "desviacion_std":           round(desv, 6),
-        "limite_control_superior":  round(lcs, 6),
-        "limite_control_inferior":  round(lci, 6),
+        "media":                    round(_safe(media), 6),
+        "desviacion_std":           round(_safe(desv),  6),
+        "limite_control_superior":  round(_safe(lcs),   6),
+        "limite_control_inferior":  round(_safe(lci),   6),
         "total_puntos":             total_puntos,       # conteo REAL del dataset
         "total_anomalias":          total_anomalias,
         "puntos_display":           len(df_display),    # puntos enviados al front
