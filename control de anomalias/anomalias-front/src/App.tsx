@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { RotateCcw, ArrowLeft, ShieldAlert, BarChart2, Activity, AlertCircle, Zap, Users, Download, BookOpen, Save, FlaskConical } from 'lucide-react'
+import { RotateCcw, ArrowLeft, BarChart2, Activity, AlertCircle, Zap, Users, Download, BookOpen, Save, FlaskConical } from 'lucide-react'
 import type { AnalysisResult, FilterConfig, MergedPoint } from './types'
 import { useAuth } from './contexts/AuthContext'
 import { limpiarCSV, procesarDatos, saveReport } from './services/api'
@@ -31,25 +31,24 @@ export default function App() {
   const canEdit = role === 'admin' || role === 'editor'
   const isAdmin = role === 'admin'
 
-  // ── Viewer sin acceso de edición → mensaje ───────────────────────────────
+  // ── Viewer → ReportsPanel directo ───────────────────────────────────────
   if (!canEdit) {
     return (
       <div className="min-h-screen bg-slate-950">
         <LoginBar />
-        <div className="max-w-xl mx-auto px-4 py-20 text-center space-y-4">
-          <ShieldAlert className="mx-auto text-amber-400" size={48} strokeWidth={1.5} />
-          <h2 className="text-xl font-bold text-slate-200">Acceso de solo lectura</h2>
-          <p className="text-slate-500 text-sm">
-            Tu rol <span className="text-slate-300 font-medium">Visualizador</span> no tiene permiso
-            para cargar datos ni ejecutar análisis. Un Admin o Editor debe compartirte un reporte.
-          </p>
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-xs text-slate-600 text-left">
-            <p className="font-semibold text-slate-400 mb-2">Roles disponibles:</p>
-            <p>🔵 <b className="text-cyan-400">Admin</b> — acceso total, gestión de usuarios, sigma ajustable</p>
-            <p>🟣 <b className="text-violet-400">Editor</b> — carga CSV, filtra y analiza anomalías</p>
-            <p>⚪ <b className="text-slate-400">Viewer</b> — visualiza reportes compartidos (tú)</p>
+        <main className="max-w-5xl mx-auto px-4 py-10 space-y-8">
+          <div className="flex items-start justify-between flex-wrap gap-3">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-100 tracking-tight">
+                Control de <span className="text-cyan-400">Anomalías</span>
+              </h1>
+              <p className="text-slate-500 text-sm mt-1">
+                Reportes compartidos · rol <span className="text-slate-400 font-medium">Visualizador</span>
+              </p>
+            </div>
           </div>
-        </div>
+          <ReportsPanel />
+        </main>
       </div>
     )
   }
@@ -335,17 +334,19 @@ function Dashboard({ role, isAdmin }: { role: 'admin' | 'editor'; isAdmin: boole
               </div>
               <div className="flex items-center gap-2">
                 {savedId ? (
-                  <span className="text-xs text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 rounded-xl">
-                    ✓ Guardado — visible en Reportes
+                  <span className="flex items-center gap-1.5 text-sm text-emerald-400 border border-emerald-500/40
+                    bg-emerald-500/10 px-4 py-2 rounded-xl font-medium">
+                    <Save size={13} /> Guardado — visible para todos los usuarios
                   </span>
                 ) : (
                   <button onClick={handleSaveReport} disabled={saving}
-                    className="flex items-center gap-1.5 text-sm border border-slate-700 hover:border-violet-500/50
-                      text-slate-400 hover:text-violet-400 px-3 py-1.5 rounded-xl transition-colors disabled:opacity-40">
+                    className="flex items-center gap-2 text-sm font-semibold
+                      bg-emerald-600 hover:bg-emerald-500 text-white
+                      px-4 py-2 rounded-xl transition-colors disabled:opacity-40 shadow-lg shadow-emerald-900/30">
                     {saving
-                      ? <span className="animate-spin w-3 h-3 border border-slate-400/30 border-t-slate-400 rounded-full" />
-                      : <Save size={13} />}
-                    Guardar análisis
+                      ? <span className="animate-spin w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full" />
+                      : <Save size={14} />}
+                    Guardar y compartir
                   </button>
                 )}
                 <button
