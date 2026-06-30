@@ -33,6 +33,7 @@ export interface ShewartResult {
 
 export interface AnalysisResult {
   colY: string
+  originalColY?: string  // CSV column name when colY is a segmented label
   data: ShewartResult
 }
 
@@ -54,4 +55,15 @@ export interface UserRecord {
   name: string
   role: Role
   is_active: boolean
+}
+
+export interface ReportRecord {
+  id: string
+  title: string
+  col_x: string
+  cols_y: string[]
+  sigma: number
+  created_by_name: string
+  created_at: string
+  results_json?: AnalysisResult[]
 }

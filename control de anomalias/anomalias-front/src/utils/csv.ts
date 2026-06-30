@@ -52,12 +52,15 @@ export function applyFilters(csv: string, filters: FilterConfig[]): string {
 
 export function mergeResults(results: AnalysisResult[], colX: string): MergedPoint[] {
   const byX = new Map<string, MergedPoint>()
-  for (const { colY, data } of results) {
+  for (const { colY, originalColY, data } of results) {
+    // With segmentation, the API punto uses the original CSV column name,
+    // but we store it under the display label (e.g. "Value [Paid_Ruby]")
+    const srcKey = originalColY ?? colY
     for (const punto of data.serie) {
       const xVal = String(punto[colX])
       if (!byX.has(xVal)) byX.set(xVal, { [colX]: punto[colX] as string | number })
       const entry = byX.get(xVal)!
-      entry[colY] = (punto as SeriePunto)[colY] as number
+      entry[colY] = (punto as SeriePunto)[srcKey] as number
       entry[`${colY}_anomalia`] = (punto as SeriePunto).anomalia
     }
   }

@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, ForeignKey
+import uuid
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, ForeignKey, JSON
 from sqlalchemy.sql import func
 from database import Base
 
@@ -31,4 +32,19 @@ class Analysis(Base):
     media = Column(Float)
     lcs = Column(Float)
     lci = Column(Float)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class Report(Base):
+    """Análisis guardado y compartible con cualquier usuario autenticado."""
+    __tablename__ = "reports"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    title = Column(String(200), nullable=True)
+    col_x = Column(String(100), nullable=False)
+    cols_y = Column(JSON, nullable=False)         # list[str]
+    sigma = Column(Float, default=3.0)
+    results_json = Column(JSON, nullable=False)   # list[AnalysisResult] serializado
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_by_name = Column(String(100), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

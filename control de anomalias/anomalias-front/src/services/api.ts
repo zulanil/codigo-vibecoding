@@ -1,4 +1,4 @@
-import type { LimpiarResponse, ShewartResult, UserRecord, Role } from '../types'
+import type { LimpiarResponse, ShewartResult, UserRecord, Role, ReportRecord, AnalysisResult } from '../types'
 import { getAuthHeader } from '../contexts/AuthContext'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
@@ -62,6 +62,36 @@ export async function changeRole(userId: number, role: Role): Promise<void> {
 
 export async function deleteUser(userId: number): Promise<void> {
   const res = await fetch(`${API_URL}/api/auth/users/${userId}`, {
+    method: 'DELETE', headers: getAuthHeader(),
+  })
+  return handleResponse<void>(res)
+}
+
+// ── Reportes compartidos ──────────────────────────────────────────────────────
+
+export async function saveReport(data: {
+  title?: string; col_x: string; cols_y: string[]; sigma: number; results_json: AnalysisResult[]
+}): Promise<ReportRecord> {
+  const res = await fetch(`${API_URL}/api/reports`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    body: JSON.stringify(data),
+  })
+  return handleResponse<ReportRecord>(res)
+}
+
+export async function listReports(): Promise<ReportRecord[]> {
+  const res = await fetch(`${API_URL}/api/reports`, { headers: getAuthHeader() })
+  return handleResponse<ReportRecord[]>(res)
+}
+
+export async function getReport(id: string): Promise<ReportRecord> {
+  const res = await fetch(`${API_URL}/api/reports/${id}`, { headers: getAuthHeader() })
+  return handleResponse<ReportRecord>(res)
+}
+
+export async function deleteReport(id: string): Promise<void> {
+  const res = await fetch(`${API_URL}/api/reports/${id}`, {
     method: 'DELETE', headers: getAuthHeader(),
   })
   return handleResponse<void>(res)

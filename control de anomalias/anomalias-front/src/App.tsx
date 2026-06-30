@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react'
-import { RotateCcw, ArrowLeft, ShieldAlert, BarChart2, Activity, AlertCircle, Zap, Users } from 'lucide-react'
+import { RotateCcw, ArrowLeft, ShieldAlert, BarChart2, Activity, AlertCircle, Zap, Users, Download, BookOpen, Save } from 'lucide-react'
 import type { AnalysisResult, FilterConfig, MergedPoint } from './types'
 import { useAuth } from './contexts/AuthContext'
-import { limpiarCSV, procesarDatos } from './services/api'
+import { limpiarCSV, procesarDatos, saveReport } from './services/api'
 import { applyFilters, mergeResults, getUniqueValues } from './utils/csv'
 import LoginPage from './components/LoginPage'
 import LoginBar from './components/LoginBar'
@@ -13,6 +13,7 @@ import FilterPanel from './components/FilterPanel'
 import AnomalyChart from './components/AnomalyChart'
 import AnomalyTable from './components/AnomalyTable'
 import AdminPanel from './components/AdminPanel'
+import ReportsPanel from './components/ReportsPanel'
 
 type Step = 1 | 2 | 3 | 4
 
@@ -58,7 +59,9 @@ export default function App() {
 
 // ── Dashboard (solo admin + editor) ──────────────────────────────────────────
 function Dashboard({ role, isAdmin }: { role: 'admin' | 'editor'; isAdmin: boolean }) {
-  const [view, setView] = useState<'dashboard' | 'admin'>('dashboard')
+  const [view, setView] = useState<'dashboard' | 'admin' | 'reports'>('dashboard')
+  const [saving, setSaving] = useState(false)
+  const [savedId, setSavedId] = useState<string | null>(null)
   const [step, setStep] = useState<Step>(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -117,7 +120,7 @@ function Dashboard({ role, isAdmin }: { role: 'admin' | 'editor'; isAdmin: boole
               { ...segFilter, tipo: 'categoria' as const, categorias: [segVal] },
             ])
             const data = await procesarDatos(csvSeg, colX, cy, sigma)
-            return { colY: `${cy} [${segVal}]`, data } as AnalysisResult
+            return { colY: `${cy} [${segVal}]`, originalColY: cy, data } as AnalysisResult
           })
         )
         rawResults = await Promise.all(tasks)
@@ -133,9 +136,19 @@ function Dashboard({ role, isAdmin }: { role: 'admin' | 'editor'; isAdmin: boole
     finally { setLoading(false) }
   }
 
+  async function handleSaveReport() {
+    setSaving(true); setSavedId(null)
+    try {
+      const r = await saveReport({ col_x: colX, cols_y: colsY, sigma, results_json: results })
+      setSavedId(r.id)
+    } catch (e) { setError((e as Error).message) }
+    finally { setSaving(false) }
+  }
+
   function resetear() {
     setStep(1); setCsvLimpio(''); setColumnas([]); setPreview([])
     setColX(''); setColsY([]); setFilters([]); setResults([]); setError(null); setSigma(3.0)
+    setSavedId(null)
   }
 
   const totalAnomalias = results.reduce((s, r) => s + r.data.total_anomalias, 0)
@@ -158,6 +171,13 @@ function Dashboard({ role, isAdmin }: { role: 'admin' | 'editor'; isAdmin: boole
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <button onClick={() => setView(v => v === 'reports' ? 'dashboard' : 'reports')}
+              className={`flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl border transition-colors
+                ${view === 'reports'
+                  ? 'bg-violet-600/20 border-violet-500/40 text-violet-400'
+                  : 'border-slate-800 hover:border-slate-700 text-slate-500 hover:text-slate-300'}`}>
+              <BookOpen size={13} /> Reportes
+            </button>
             {isAdmin && (
               <button onClick={() => setView(v => v === 'admin' ? 'dashboard' : 'admin')}
                 className={`flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl border transition-colors
@@ -177,11 +197,12 @@ function Dashboard({ role, isAdmin }: { role: 'admin' | 'editor'; isAdmin: boole
           </div>
         </div>
 
-        {/* Panel admin */}
-        {view === 'admin' && <AdminPanel />}
+        {/* Paneles de vistas alternativas */}
+        {view === 'admin'   && <AdminPanel />}
+        {view === 'reports' && <ReportsPanel />}
 
-        {/* Dashboard content — oculto en vista admin */}
-        {view === 'admin' ? null : (<>
+        {/* Dashboard content */}
+        {view !== 'dashboard' ? null : (<>
 
         {/* Steps — progress bar + chips */}
         <div className="space-y-2">
@@ -292,16 +313,44 @@ function Dashboard({ role, isAdmin }: { role: 'admin' | 'editor'; isAdmin: boole
         {/* ── Paso 4 ────────────────────────────────────────────────────── */}
         {step === 4 && results.length > 0 && (
           <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <button onClick={() => setStep(3)}
-                className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-300
-                  border border-slate-800 hover:border-slate-700 px-3 py-1.5 rounded-xl transition-colors">
-                <ArrowLeft size={13} /> Cambiar filtros
-              </button>
-              <span className="text-xs text-slate-700">
-                σ={sigma} · {filters.length} filtro(s) · {colsY.length} métrica(s)
-              </span>
+            {/* Barra de acciones */}
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <button onClick={() => setStep(3)}
+                  className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-300
+                    border border-slate-800 hover:border-slate-700 px-3 py-1.5 rounded-xl transition-colors">
+                  <ArrowLeft size={13} /> Cambiar filtros
+                </button>
+                <span className="text-xs text-slate-700">
+                  σ={sigma} · {filters.length} filtro(s) · {results.length} métrica(s)
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {savedId ? (
+                  <span className="text-xs text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 rounded-xl">
+                    ✓ Guardado — visible en Reportes
+                  </span>
+                ) : (
+                  <button onClick={handleSaveReport} disabled={saving}
+                    className="flex items-center gap-1.5 text-sm border border-slate-700 hover:border-violet-500/50
+                      text-slate-400 hover:text-violet-400 px-3 py-1.5 rounded-xl transition-colors disabled:opacity-40">
+                    {saving
+                      ? <span className="animate-spin w-3 h-3 border border-slate-400/30 border-t-slate-400 rounded-full" />
+                      : <Save size={13} />}
+                    Guardar análisis
+                  </button>
+                )}
+                <button
+                  onClick={() => window.print()}
+                  className="flex items-center gap-1.5 text-sm border border-slate-700 hover:border-cyan-500/50
+                    text-slate-400 hover:text-cyan-400 px-3 py-1.5 rounded-xl transition-colors">
+                  <Download size={13} /> Descargar reporte
+                </button>
+              </div>
             </div>
+
+            {/* Gráficas — primero */}
+            <AnomalyChart data={mergedData} colX={colX} colsY={colsY} results={results} sigma={sigma} />
 
             {/* KPI cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -326,7 +375,7 @@ function Dashboard({ role, isAdmin }: { role: 'admin' | 'editor'; isAdmin: boole
                 sub={isAdmin ? 'Ajustable (Admin)' : 'Estándar'} />
             </div>
 
-            <AnomalyChart data={mergedData} colX={colX} colsY={colsY} results={results} sigma={sigma} />
+            {/* Tabla de anomalías */}
             <AnomalyTable results={results} colX={colX} />
           </div>
         )}

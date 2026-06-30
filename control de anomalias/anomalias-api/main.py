@@ -7,6 +7,7 @@ from database import engine, SessionLocal, get_db
 from sqlalchemy.orm import Session
 from models import Base, User, Analysis
 from auth.router import router as auth_router
+from reports.router import router as reports_router
 from auth.dependencies import get_current_user, require_role
 from auth.jwt import hash_password
 
@@ -21,26 +22,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Auth router ───────────────────────────────────────────────────────────────
+# ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(auth_router)
+app.include_router(reports_router)
 
 
-# ── Startup: crear tablas + usuarios demo ─────────────────────────────────────
+# ── Startup: crear tablas + seed usuarios demo ────────────────────────────────
+SEED_USERS = [
+    ("admin@anomalias.com",   "Administrador",    "Admin2024!",   "admin"),
+    ("editor1@anomalias.com", "Editor Uno",       "Editor2024!",  "editor"),
+    ("editor2@anomalias.com", "Editor Dos",       "Editor2024!",  "editor"),
+    ("viewer1@anomalias.com", "Visualizador Uno", "Viewer2024!",  "viewer"),
+    ("viewer2@anomalias.com", "Visualizador Dos", "Viewer2024!",  "viewer"),
+]
+
+
+def _upsert_user(db, email, name, password, role):
+    user = db.query(User).filter(User.email == email).first()
+    if user:
+        user.name = name
+        user.hashed_password = hash_password(password)
+        user.role = role
+    else:
+        db.add(User(email=email, name=name, hashed_password=hash_password(password), role=role))
+
+
 @app.on_event("startup")
 def startup():
     Base.metadata.create_all(bind=engine)
 
     db = SessionLocal()
     try:
-        if db.query(User).count() == 0:
-            seeds = [
-                User(email="admin@anomalias.com",  name="Administrador", hashed_password=hash_password("admin123"),  role="admin"),
-                User(email="editor@anomalias.com", name="Editor",         hashed_password=hash_password("editor123"), role="editor"),
-                User(email="viewer@anomalias.com", name="Visualizador",   hashed_password=hash_password("viewer123"), role="viewer"),
-            ]
-            db.add_all(seeds)
-            db.commit()
-            print("✅ Usuarios demo creados")
+        for email, name, pwd, role in SEED_USERS:
+            _upsert_user(db, email, name, pwd, role)
+        db.commit()
+        print("✅ Usuarios demo sincronizados")
     finally:
         db.close()
 
