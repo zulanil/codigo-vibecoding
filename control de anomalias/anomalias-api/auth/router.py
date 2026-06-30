@@ -17,13 +17,11 @@ def register(body: UserRegister, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == body.email).first():
         raise HTTPException(400, "Email ya registrado")
 
-    role = body.role if body.role in ALLOWED_ROLES else "viewer"
-
     user = User(
         email=body.email,
         name=body.name,
         hashed_password=hash_password(body.password),
-        role=role,
+        role="viewer",  # registro público siempre viewer
     )
     db.add(user)
     db.commit()
@@ -64,13 +62,34 @@ def list_users(
     return db.query(User).order_by(User.created_at).all()
 
 
+@router.post("/users", response_model=UserOut, summary="Crear usuario [Admin]")
+def admin_create_user(
+    body: UserRegister,
+    db: Session = Depends(get_db),
+    _admin: User = Depends(require_role("admin")),
+):
+    if db.query(User).filter(User.email == body.email).first():
+        raise HTTPException(400, "Email ya registrado")
+    role = body.role if body.role in ALLOWED_ROLES else "viewer"
+    user = User(
+        email=body.email,
+        name=body.name,
+        hashed_password=hash_password(body.password),
+        role=role,
+    )
+    db.add(user); db.commit(); db.refresh(user)
+    return user
+
+
 @router.patch("/users/{user_id}/role", summary="Cambiar rol de usuario [Admin]")
 def change_role(
     user_id: int,
     body: dict,
     db: Session = Depends(get_db),
-    _admin: User = Depends(require_role("admin")),
+    admin: User = Depends(require_role("admin")),
 ):
+    if user_id == admin.id:
+        raise HTTPException(400, "No puedes cambiar tu propio rol")
     target = db.query(User).filter(User.id == user_id).first()
     if not target:
         raise HTTPException(404, "Usuario no encontrado")
@@ -80,3 +99,18 @@ def change_role(
     target.role = new_role
     db.commit()
     return {"ok": True, "role": new_role}
+
+
+@router.delete("/users/{user_id}", summary="Eliminar usuario [Admin]")
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_role("admin")),
+):
+    if user_id == admin.id:
+        raise HTTPException(400, "No puedes eliminar tu propia cuenta")
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        raise HTTPException(404, "Usuario no encontrado")
+    db.delete(target); db.commit()
+    return {"ok": True}

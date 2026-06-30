@@ -47,3 +47,11 @@ export interface FilterConfig {
 }
 
 export type MergedPoint = Record<string, string | number | boolean>
+
+export interface UserRecord {
+  id: number
+  email: string
+  name: string
+  role: Role
+  is_active: boolean
+}

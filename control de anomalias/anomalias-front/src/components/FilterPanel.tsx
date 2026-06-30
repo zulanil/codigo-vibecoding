@@ -2,6 +2,50 @@ import { Plus, Trash2, Zap, ArrowLeft, SlidersHorizontal } from 'lucide-react'
 import type { FilterConfig, Role } from '../types'
 import { getUniqueValues } from '../utils/csv'
 
+function FilterSummaryChip({ filter: f }: { filter: FilterConfig }) {
+  if (!f.columna) return null
+
+  let label = ''
+  let colorCls = 'bg-slate-800 border-slate-700 text-slate-400'
+
+  if (f.tipo === 'rango') {
+    const parts = []
+    if (f.min !== '') parts.push(`≥ ${f.min}`)
+    if (f.max !== '') parts.push(`≤ ${f.max}`)
+    label = parts.length > 0
+      ? `${f.columna}: ${parts.join(' y ')}`
+      : `${f.columna}: sin rango`
+    colorCls = parts.length > 0
+      ? 'bg-blue-500/10 border-blue-500/30 text-blue-300'
+      : 'bg-slate-800 border-slate-700 text-slate-500'
+  } else if (f.tipo === 'texto') {
+    label = f.texto
+      ? `${f.columna} contiene "${f.texto}"`
+      : `${f.columna}: sin texto`
+    colorCls = f.texto
+      ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+      : 'bg-slate-800 border-slate-700 text-slate-500'
+  } else if (f.tipo === 'categoria') {
+    label = f.categorias.length > 0
+      ? `${f.columna} = [${f.categorias.join(', ')}]`
+      : `${f.columna}: todas las categorías`
+    colorCls = f.categorias.length > 0
+      ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'
+      : 'bg-slate-800 border-slate-700 text-slate-500'
+  } else if (f.tipo === 'segmentar') {
+    label = f.categorias.length > 0
+      ? `⚡ Segmentar ${f.columna} → [${f.categorias.join(', ')}]`
+      : `⚡ Segmentar ${f.columna} → todos los valores`
+    colorCls = 'bg-violet-500/10 border-violet-500/30 text-violet-300'
+  }
+
+  return (
+    <span className={`inline-flex items-center text-xs font-mono px-2.5 py-1 rounded-lg border ${colorCls}`}>
+      {label}
+    </span>
+  )
+}
+
 interface Props {
   columnas: string[]
   csvLimpio: string
@@ -101,6 +145,13 @@ export default function FilterPanel({
             return (
               <div key={f.id}
                 className="flex flex-wrap items-start gap-3 bg-slate-800/60 border border-slate-700/60 rounded-xl p-3">
+
+                {/* Resumen del filtro activo */}
+                {f.columna && (
+                  <div className="w-full mb-1">
+                    <FilterSummaryChip filter={f} />
+                  </div>
+                )}
 
                 {/* Columna */}
                 <select value={f.columna} disabled={disabled}

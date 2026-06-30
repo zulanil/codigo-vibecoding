@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { RotateCcw, ArrowLeft, ShieldAlert, BarChart2, Activity, AlertCircle, Zap } from 'lucide-react'
+import { RotateCcw, ArrowLeft, ShieldAlert, BarChart2, Activity, AlertCircle, Zap, Users } from 'lucide-react'
 import type { AnalysisResult, FilterConfig, MergedPoint } from './types'
 import { useAuth } from './contexts/AuthContext'
 import { limpiarCSV, procesarDatos } from './services/api'
@@ -12,6 +12,7 @@ import ColumnSelector from './components/ColumnSelector'
 import FilterPanel from './components/FilterPanel'
 import AnomalyChart from './components/AnomalyChart'
 import AnomalyTable from './components/AnomalyTable'
+import AdminPanel from './components/AdminPanel'
 
 type Step = 1 | 2 | 3 | 4
 
@@ -57,6 +58,7 @@ export default function App() {
 
 // ── Dashboard (solo admin + editor) ──────────────────────────────────────────
 function Dashboard({ role, isAdmin }: { role: 'admin' | 'editor'; isAdmin: boolean }) {
+  const [view, setView] = useState<'dashboard' | 'admin'>('dashboard')
   const [step, setStep] = useState<Step>(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -145,24 +147,41 @@ function Dashboard({ role, isAdmin }: { role: 'admin' | 'editor'; isAdmin: boole
       <main className="max-w-5xl mx-auto px-4 py-10 space-y-8">
 
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between flex-wrap gap-3">
           <div>
             <h1 className="text-3xl font-bold text-slate-100 tracking-tight">
               Control de <span className="text-cyan-400">Anomalías</span>
             </h1>
             <p className="text-slate-500 text-sm mt-1">
               Carta Shewhart · Media ± {sigma}σ
-              {isAdmin && <span className="ml-2 text-cyan-500">· Panel Admin activo</span>}
+              {isAdmin && <span className="ml-2 text-cyan-500">· Admin</span>}
             </p>
           </div>
-          {step > 1 && (
-            <button onClick={resetear}
-              className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-300
-                border border-slate-800 hover:border-slate-700 px-3 py-2 rounded-xl transition-colors">
-              <RotateCcw size={13} /> Nuevo análisis
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <button onClick={() => setView(v => v === 'admin' ? 'dashboard' : 'admin')}
+                className={`flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl border transition-colors
+                  ${view === 'admin'
+                    ? 'bg-cyan-600/20 border-cyan-500/40 text-cyan-400'
+                    : 'border-slate-800 hover:border-slate-700 text-slate-500 hover:text-slate-300'}`}>
+                <Users size={13} /> Usuarios
+              </button>
+            )}
+            {view === 'dashboard' && step > 1 && (
+              <button onClick={resetear}
+                className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-300
+                  border border-slate-800 hover:border-slate-700 px-3 py-2 rounded-xl transition-colors">
+                <RotateCcw size={13} /> Nuevo análisis
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Panel admin */}
+        {view === 'admin' && <AdminPanel />}
+
+        {/* Dashboard content — oculto en vista admin */}
+        {view === 'admin' ? null : (<>
 
         {/* Steps — progress bar + chips */}
         <div className="space-y-2">
@@ -311,6 +330,8 @@ function Dashboard({ role, isAdmin }: { role: 'admin' | 'editor'; isAdmin: boole
             <AnomalyTable results={results} colX={colX} />
           </div>
         )}
+
+        </>)}
 
       </main>
     </div>
