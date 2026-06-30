@@ -70,7 +70,7 @@ export default function FilterPanel({
   onAdd, onUpdate, onRemove, onSigmaChange, onAnalizar, onBack, onReset, loading,
 }: Props) {
   const isAdmin = role === 'admin'
-  const disabled = !isAdmin || loading
+  const disabled = role === 'viewer' || loading
   const hasSegmentar = filters.some(f => f.tipo === 'segmentar')
 
   return (

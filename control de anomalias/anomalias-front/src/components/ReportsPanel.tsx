@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { RefreshCw, FileBarChart, Eye, Trash2, X, ChevronLeft } from 'lucide-react'
+import { RefreshCw, FileBarChart, Eye, Trash2, X, ChevronLeft, FlaskConical } from 'lucide-react'
 import type { ReportRecord, AnalysisResult } from '../types'
 import { useAuth } from '../contexts/AuthContext'
 import { listReports, getReport, deleteReport } from '../services/api'
@@ -60,9 +60,10 @@ function ReportView({ report, onBack }: { report: ReportRecord; onBack: () => vo
 }
 
 // ── Lista de reportes ─────────────────────────────────────────────────────────
-export default function ReportsPanel() {
+export default function ReportsPanel({ onAnalizar }: { onAnalizar?: () => void }) {
   const { user } = useAuth()
   const isAdmin = user?.role === 'admin'
+  const canAnalyze = user?.role === 'admin' || user?.role === 'editor'
   const [reports, setReports] = useState<ReportRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [viewing, setViewing] = useState<ReportRecord | null>(null)
@@ -98,11 +99,21 @@ export default function ReportsPanel() {
             {reports.length} reporte(s) guardado(s) · visible para todos los usuarios
           </p>
         </div>
-        <button onClick={fetchReports} disabled={loading}
-          className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-200
-            border border-slate-700 hover:border-slate-600 px-3 py-2 rounded-xl transition-colors disabled:opacity-40">
-          <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
-        </button>
+        <div className="flex items-center gap-2">
+          {canAnalyze && onAnalizar && (
+            <button onClick={onAnalizar}
+              className="flex items-center gap-1.5 text-sm text-emerald-400 hover:text-emerald-300
+                border border-emerald-500/30 hover:border-emerald-400/50 bg-emerald-500/10
+                px-3 py-2 rounded-xl transition-colors">
+              <FlaskConical size={13} /> Realizar análisis
+            </button>
+          )}
+          <button onClick={fetchReports} disabled={loading}
+            className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-200
+              border border-slate-700 hover:border-slate-600 px-3 py-2 rounded-xl transition-colors disabled:opacity-40">
+            <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+          </button>
+        </div>
       </div>
 
       {loading ? (

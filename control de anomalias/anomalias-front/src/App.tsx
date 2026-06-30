@@ -199,7 +199,7 @@ function Dashboard({ role, isAdmin }: { role: 'admin' | 'editor'; isAdmin: boole
 
         {/* Paneles de vistas alternativas */}
         {view === 'admin'   && <AdminPanel />}
-        {view === 'reports' && <ReportsPanel />}
+        {view === 'reports' && <ReportsPanel onAnalizar={() => setView('dashboard')} />}
 
         {/* Dashboard content */}
         {view !== 'dashboard' ? null : (<>
