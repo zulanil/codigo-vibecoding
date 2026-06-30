@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply bg-slate-950 text-slate-100; }
+}
+
+/* ── Glassmorphism ───────────────────────────────────────────────────────── */
+.glass {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* Gradient border via pseudo-element */
+.gradient-border {
+  position: relative;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(6,182,212,0.35), rgba(139,92,246,0.2), rgba(255,0,51,0.1), transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ── Animated background ─────────────────────────────────────────────────── */
+@keyframes gradient-flow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Anomaly dot pulsing ring ────────────────────────────────────────────── */
+@keyframes anomaly-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%       { opacity: 0.05; transform: scale(1.5); }
+}
+.anomaly-ring {
+  animation: anomaly-pulse 1.3s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* ── Neon glow helpers ───────────────────────────────────────────────────── */
+.glow-cyan    { box-shadow: 0 0 18px rgba(6,182,212,0.30),  0 0 36px rgba(6,182,212,0.10); }
+.glow-red     { box-shadow: 0 0 18px rgba(255,0,51,0.45),   0 0 36px rgba(255,0,51,0.18); }
+.glow-emerald { box-shadow: 0 0 18px rgba(16,185,129,0.30), 0 0 36px rgba(16,185,129,0.10); }
+.glow-violet  { box-shadow: 0 0 18px rgba(139,92,246,0.30), 0 0 36px rgba(139,92,246,0.10); }
+
+/* ── Card hover lift ─────────────────────────────────────────────────────── */
+.card-hover { @apply transition-all duration-200; }
+.card-hover:hover { transform: translateY(-2px); }
+
+/* ── Monospace numbers ───────────────────────────────────────────────────── */
+.num { font-family: 'Fira Code', 'Courier New', monospace; letter-spacing: 0.02em; }
+
+/* ── Ambient background blobs (Login / hero sections) ───────────────────── */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  opacity: 0.12;
+  animation: blob-drift 18s ease-in-out infinite;
+  will-change: transform;
+  width: 420px;
+  height: 420px;
+}
+.blob-cyan   { background: #22d3ee; animation-delay: 0s; }
+.blob-violet { background: #8b5cf6; animation-delay: -6s; }
+.blob-red    { background: #FF0033; animation-delay: -12s; width: 280px; height: 280px; opacity: 0.08; }
+
+@keyframes blob-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(30px, -20px) scale(1.05); }
+  66%       { transform: translate(-20px, 15px) scale(0.97); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blob { animation: none; }
+}
+
+/* ── Monospace numbers (Fira Code via top @import) ───────────────────────── */
+
+/* ── Dark scrollbar ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar         { width: 5px; height: 5px; }
+::-webkit-scrollbar-track   { background: #0f172a; }
+::-webkit-scrollbar-thumb   { background: #334155; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
