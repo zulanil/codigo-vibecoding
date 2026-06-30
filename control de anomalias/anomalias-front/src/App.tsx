@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { RotateCcw, ArrowLeft, ShieldAlert, BarChart2, Activity, AlertCircle, Zap, Users, Download, BookOpen, Save } from 'lucide-react'
+import { RotateCcw, ArrowLeft, ShieldAlert, BarChart2, Activity, AlertCircle, Zap, Users, Download, BookOpen, Save, FlaskConical } from 'lucide-react'
 import type { AnalysisResult, FilterConfig, MergedPoint } from './types'
 import { useAuth } from './contexts/AuthContext'
 import { limpiarCSV, procesarDatos, saveReport } from './services/api'
@@ -171,6 +171,14 @@ function Dashboard({ role, isAdmin }: { role: 'admin' | 'editor'; isAdmin: boole
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {view !== 'dashboard' && (
+              <button onClick={() => setView('dashboard')}
+                className="flex items-center gap-1.5 text-sm text-cyan-400 hover:text-cyan-300
+                  border border-cyan-500/30 hover:border-cyan-400/50 bg-cyan-500/10
+                  px-3 py-2 rounded-xl transition-colors">
+                <FlaskConical size={13} /> Control de Anomalías
+              </button>
+            )}
             <button onClick={() => setView(v => v === 'reports' ? 'dashboard' : 'reports')}
               className={`flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl border transition-colors
                 ${view === 'reports'
