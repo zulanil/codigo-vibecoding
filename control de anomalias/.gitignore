@@ -4,3 +4,8 @@
 # OS
 .DS_Store
 Thumbs.db
+
+# PPTs locales (solo expo queda en repo)
+*.pptx
+*.ppt
+!Presentacion_ControlAnomalias_expo.pptx
