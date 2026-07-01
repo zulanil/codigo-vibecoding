@@ -15,6 +15,7 @@ function SingleTable({
 }: { result: AnalysisResult; colX: string; color: string }) {
   const [page, setPage] = useState(0)
   const { colY, data } = result
+  const dataKey = result.originalColY ?? colY
   const total = data.anomalias.length
   const pages = Math.ceil(total / PAGE_SIZE)
   const slice = data.anomalias.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
@@ -52,7 +53,7 @@ function SingleTable({
           </thead>
           <tbody className="divide-y divide-slate-800/50">
             {slice.map((fila, i) => {
-              const val = fila[colY] as number
+              const val = fila[dataKey] as number
               const delta = val - data.media
               const isAbove = val > data.limite_control_superior
               const limit = isAbove
